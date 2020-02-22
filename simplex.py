@@ -30,20 +30,17 @@ from tabulate import tabulate
 
 def get_args():
 	parser = argparse.ArgumentParser(description="Run the simplex algorithm on given problem." 
-											"Usage: simplex.py [options...] <matrix-A-file> "
-											"<vector-B-file> <vector-C-file> "
-											"E.g.: simplex.py --initial-basis data/basis "
-											"--random-seed 1 data/A data/b data/c",
-									formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+		"Usage: simplex.py [options...] <matrix-A-file> <vector-B-file> <vector-C-file> <out-file>"
+		"E.g.: simplex.py --initial-basis data/basis --random-seed 1 data/A data/b data/c exp/out",
+		formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 	parser.add_argument("--initial-basis", type=str, dest = "initial_basis_file", default=None,
-						help="File containing intial basis columns")
+		help="File containing intial basis columns")
 
 	parser.add_argument("--basis-index", type=int, dest="basis_index", default=1,
-						help="0/1 indexing used for basis")
+		help="0/1 indexing used for basis")
 
-	parser.add_argument("--random-seed", type=int, default=0,
-						help="Seed to be used for randomization")
+	parser.add_argument("--random-seed", type=int, default=0, help="Seed to be used for randomization")
 
 	parser.add_argument("matrix_A_file", help="File containing matrix A")
 	parser.add_argument("vector_b_file", help="File containing vector b")
@@ -108,7 +105,7 @@ def compute_initial_bfs(A,b,c,z,basis):
 def run_simplex_step(A,b,c,z,basis):
 	pivot_col = np.argmax(c)
 	ratio = b/A[:,pivot_col]
-	valid_idx = np.where(ratio > 0)[0]
+	valid_idx = np.where(A[:,pivot_col] > 0)[0]
 	if (valid_idx.size == 0):
 		return z, False
 	pivot_row = valid_idx[ratio[valid_idx].argmin()]
