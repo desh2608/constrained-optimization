@@ -24,7 +24,7 @@
 # To write the output, supply a filename at a path
 # that exists, otherwise an exception is raised.
 
-import argparse, sys
+import argparse, sys, random
 import numpy as np
 from tabulate import tabulate
 
@@ -40,7 +40,8 @@ def get_args():
 	parser.add_argument("--basis-index", type=int, dest="basis_index", default=1,
 		help="0/1 indexing used for basis")
 
-	parser.add_argument("--random-seed", type=int, default=0, help="Seed to be used for randomization")
+	parser.add_argument("--random-seed", type=int, dest="random_seed", default=0, 
+		help="Seed to be used for randomization")
 
 	parser.add_argument("matrix_A_file", help="File containing matrix A")
 	parser.add_argument("vector_b_file", help="File containing vector b")
@@ -67,7 +68,7 @@ def read_args(args):
 		raise Exception("A must be matrix and b,c must be vectors") 
 	if not (A.shape[0] == b.shape[0] and A.shape[1] == c.shape[0]):
 		raise Exception("Incompatible sizes of A, b, and c")
-	if not basis.shape[0] == A.shape[0]:
+	if basis is not None and basis.shape[0] != A.shape[0]:
 		raise Exception("Provided basis does not have the same rank as A")
 	
 	fout = open(args.output_file, 'w')
@@ -90,16 +91,25 @@ def row_reduce(A,b,c,z,row,col):
 		c -= A[row]*c[col]
 	return z
 
-
-def compute_bfs_bigM(A,b):
-	raise NotImplementedError
-
 # This method computes an initial BFS given basis columns
 def compute_initial_bfs(A,b,c,z,basis):
 	print ("Computing initial BFS using columns", basis)
 	for i,col in enumerate(basis):
 		z = row_reduce(A,b,c,z,i,col)
 	return z
+
+# If initial basis is not provided, this method adds
+# artificial variables with a large cost and uses them
+# as basis.
+def compute_initial_bfs_bigM(A,b,c,z,M):
+	print ("No starting basis provided. Using big M method with M = {}".format(M))
+	m,n = A.shape
+	A_prime = np.identity(m)
+	A = np.hstack((A, A_prime))
+	basis = np.array(range(n,n+m))
+	c_prime = -M*np.ones(m)
+	c = np.concatenate([c, c_prime])
+	return A, c, basis
 
 # This method runs one step of the simplex method
 def run_simplex_step(A,b,c,z,basis):
@@ -119,7 +129,7 @@ def print_tableau(A, b, c, z, fout):
 	A = np.insert(A, 0, np.zeros(A.shape[0]), axis=1)
 	A[0,0] = 1
 	A = np.insert(A, A.shape[1], b, axis=1)
-	table = tabulate(A, headers="firstrow", tablefmt="fancy_grid")
+	table = tabulate(A, tablefmt="fancy_grid", floatfmt=".2f")
 	print(table, file=fout)
 	return
 
@@ -161,17 +171,22 @@ def main():
 	print_tableau(A.copy(), b.copy(), c, z, fout)
 
 	if basis is None:
-		# TODO: Big-M method to find initial BFS tableau 
-		compute_bfs_bigM(A,b)
+		initialBasisProvided = False
+		random.seed(args.random_seed)
+		M = random.getrandbits(16)
+		A, c, basis = compute_initial_bfs_bigM(A,b,c,z,M)
 	else:
+		initialBasisProvided = True
 		z = compute_initial_bfs(A,b,c,z,basis)
 
 	print ("Initial BFS:", file=fout)
 	print_tableau(A.copy(), b.copy(), c, z, fout)
 
 	z, bfs = simplex(A,b,c,z,basis,fout)
-	print("Optimal solution: ", bfs, file=fout)
-	print("Optimal objective function value = ", z, file=fout)
+	if not initialBasisProvided:
+		bfs = bfs[:-A.shape[0]]
+	print("Optimal solution: {}".format(bfs), file=fout)
+	print("Optimal objective function value = {:.2f}".format(z), file=fout)
 
 	return
 
