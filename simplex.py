@@ -43,6 +43,9 @@ def get_args():
 	parser.add_argument("--random-seed", type=int, dest="random_seed", default=0, 
 		help="Seed to be used for randomization")
 
+	parser.add_argument("--dual-simplex", dest="dual_simplex", action="store_true",
+		help="Performs dual simplex method instead of primal simplex")
+
 	parser.add_argument("matrix_A_file", help="File containing matrix A")
 	parser.add_argument("vector_b_file", help="File containing vector b")
 	parser.add_argument("vector_c_file", help="File containing vector c")
@@ -114,11 +117,25 @@ def compute_initial_bfs_bigM(A,b,c,z,M):
 # This method runs one step of the simplex method
 def run_simplex_step(A,b,c,z,basis):
 	pivot_col = np.argmax(c)
-	ratio = b/A[:,pivot_col]
+	ratio = np.divide(b, A[:,pivot_col], out=np.zeros_like(b), 
+		where=A[:,pivot_col]>0)
 	valid_idx = np.where(A[:,pivot_col] > 0)[0]
 	if (valid_idx.size == 0):
 		return z, False
 	pivot_row = valid_idx[ratio[valid_idx].argmin()]
+	basis[pivot_row] = pivot_col
+	z = row_reduce(A,b,c,z,pivot_row,pivot_col)
+	return z, True
+
+# This method runs one step of the dual simplex method
+def run_dual_simplex_step(A,b,c,z,basis):
+	pivot_row = np.argmin(b)
+	ratio = np.divide(c, A[pivot_row,:], out=np.zeros_like(c), 
+		where=A[pivot_row,:]<0)
+	valid_idx = np.where(A[pivot_row,:] < 0)[0]
+	if (valid_idx.size == 0):
+		return z, False
+	pivot_col = valid_idx[ratio[valid_idx].argmin()]
 	basis[pivot_row] = pivot_col
 	z = row_reduce(A,b,c,z,pivot_row,pivot_col)
 	return z, True
@@ -160,6 +177,28 @@ def simplex(A,b,c,z,basis,fout):
 
 	return z, bfs
 
+def dual_simplex(A,b,c,z,basis,fout):
+	step = 0
+	isBounded = True
+	bfs = compute_bfs(b,c,basis)
+	initial_basis = basis.copy()
+
+	while ((b<0).any()):
+		step += 1
+		print ("Dual Simplex step {}; basis is {}".format(step, basis))
+		print ("Dual Simplex step {}; basis is {}".format(step, basis), file=fout)
+		z, isBounded = run_dual_simplex_step(A, b, c, z, basis)
+		if not isBounded:
+			print("The DP is unbounded", file=fout)
+			print("Terminating")
+			sys.exit()
+		bfs = compute_bfs(b,c,basis)
+		print_tableau(A.copy(), b.copy(), c, z, fout)
+
+	print ("Finished in {} steps".format(step))
+
+	return z, bfs, c[initial_basis]
+
 def main():
 	args = get_args()
 	A,b,c,basis,fout = read_args(args)
@@ -182,11 +221,18 @@ def main():
 	print ("Initial BFS:", file=fout)
 	print_tableau(A.copy(), b.copy(), c, z, fout)
 
-	z, bfs = simplex(A,b,c,z,basis,fout)
-	if not initialBasisProvided:
+	if (dual_simplex):
+		z, bfs, dual = dual_simplex(A,b,c,z,basis,fout)
 		bfs = bfs[:-A.shape[0]]
-	print("Optimal solution: {}".format(bfs), file=fout)
-	print("Optimal objective function value = {:.2f}".format(z), file=fout)
+		print("Optimal solution (primal): {}".format(bfs), file=fout)
+		print("Optimal solution (dual): {}".format(dual), file=fout)
+		print("Optimal objective function value = {:.2f}".format(z), file=fout)
+	else:
+		z, bfs = simplex(A,b,c,z,basis,fout)
+		if not initialBasisProvided:
+			bfs = bfs[:-A.shape[0]]
+		print("Optimal solution: {}".format(bfs), file=fout)
+		print("Optimal objective function value = {:.2f}".format(z), file=fout)
 
 	return
 
