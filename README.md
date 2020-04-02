@@ -1,32 +1,15 @@
-# Simplex method
+## Constrained Optimization
 
-This is a simple Python implementation for simulating the 
-simplex algorithm for solving linear programming problems
-of the form:
+This repository contains Python implementations for some popular
+constrained optimization methods. These implementations were
+done as part of homework assignments for the course 553.762 taught
+by Dr. Donniell Fishkind at Johns Hopkins University during Spring
+2020 term. 
 
-min c^T x s.t. Ax = b, x >= 0
+Computational efficiency was not a priority for these implementations,
+although in most cases, effort has been made to use numpy tricks
+for faster computations.
 
-The code was written as part of a homework assignment
-for course 553.762 (Constrained Optimization) during 
-Spring 2020 term at Johns Hopkins University.
-
-Author: Desh Raj (draj@cs.jhu.edu)
-
-## How to run?
-
-```
-./simplex.py [options..] <matrix-A-file> <vector-b-file> <vector-c-file> <out-file>
-```
-
-The optional arguments are:
-`--random-seed`: provide a random seed for the big-M method
-`--initial-basis`: provide an initial basis for the matrix A to compute initial BFS
-`--basis-index`: specify wheter the basis is 0 or 1 indexing (1 by default)
-
-## Example usage
-
-```
-./simplex.py --initial-basis sample/basis sample/A sample/b sample/c sample/out
-```
-
-![](sample/out.png)
+Currently, the following methods have been implemented:
+1. Simplex method (primal and dual) for LP
+2. Long-step interior point method for QP
