@@ -19,9 +19,10 @@ Author: Desh Raj (draj@cs.jhu.edu)
 ```
 
 The optional arguments are:
-`--random-seed`: provide a random seed for the big-M method
-`--initial-basis`: provide an initial basis for the matrix A to compute initial BFS
-`--basis-index`: specify wheter the basis is 0 or 1 indexing (1 by default)
+
+* `--random-seed`: provide a random seed for the big-M method
+* `--initial-basis`: provide an initial basis for the matrix A to compute initial BFS
+* `--basis-index`: specify wheter the basis is 0 or 1 indexing (1 by default)
 
 ## Example usage
 

@@ -19,11 +19,12 @@ Author: Desh Raj (draj@cs.jhu.edu)
 ```
 
 The optional arguments are:
-`--random-seed`: provide a random seed for choosing epsilon
-`--delta`: delta value for the long step method. Smaller delta allows more 
+
+* `--random-seed`: provide a random seed for choosing epsilon
+* `--delta`: delta value for the long step method. Smaller delta allows more 
 deviation from central path. 
-`--epsilon-min`: minimum multiplier value for adjusted Newton method
-`--epsilon-max`: maximum multiplier value for adjusted Newton method
+* `--epsilon-min`: minimum multiplier value for adjusted Newton method
+* `--epsilon-max`: maximum multiplier value for adjusted Newton method
 
 ## Example usage
 
