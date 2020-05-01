@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 
-# 553.762 Homework 6
+# 553.762 Homework 9
 # Copyright: Desh Raj (Johns Hopkins University)
 # Apache 2.0
 
-# This code simulates the long-step interior point
-# algorithm for quadratic programs.
-# Input format for files containing Q, c, A, and b:
-# Matrix Q (nxn): symmetric, positive definite
-# Vector c: single line containing n floats
-# Matrix A (mxn): m lines, each containing n floating
-# point values separated by a blank space
-# Vector b: single line containing m floats
+# This code simulates the penalty method for the problem
+# min e^(-x1-x2) s.t.
+# 2*x1^2 + x2^2 <= 1
+# x1 <= 0.5
 
 import argparse, sys, random
 import numpy as np
