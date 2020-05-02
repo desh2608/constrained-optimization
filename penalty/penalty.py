@@ -13,8 +13,6 @@ import argparse, sys, random
 import numpy as np
 import scipy.optimize as sopt
 
-LR=0.01
-
 def get_args():
     parser = argparse.ArgumentParser(description="Run the penalty method on give problem. The\n"
         " auxiliary function is solved using steepest descent, terminating when update becomes\n"
@@ -93,29 +91,34 @@ def dPsi(x, beta, gamma):
 def steepest_descent(x, beta, gamma, theta=0.001):
     while True:
         dx = dPsi(x, beta, gamma)
-        if (Psi(x, beta, gamma) - Psi(x - LR*dx, beta, gamma) < theta):
+        def aux(p):
+            return (Psi(x-p*dx,beta,gamma))
+        p_opt = sopt.golden(aux) 
+        if (Psi(x, beta, gamma) - Psi(x - p_opt*dx, beta, gamma) < theta):
             break
-        x = x - LR*dx
+        x = x - p_opt*dx
     return x
 
 # This function performs the penalty method
 def penalty(delta, gamma, tol):
     x = np.array([0,0])
     k = 0
+    steps = []
     while True:
         k += 1
         beta = delta**k
         x = steepest_descent(x, beta, gamma)
         print ("Step",k,"optimal x:",x)
+        steps.append(x)
         if (beta*alpha(x, gamma) < tol):
             break
-    return x, k
+    return x, k, steps
 
 def main():
     args = get_args()
     check_args(args)
 
-    x, num_iter = penalty(args.delta, args.gamma, args.tol)
+    x, num_iter, steps = penalty(args.delta, args.gamma, args.tol)
 
     print ("Optimal x is: {}".format(np.around(x, decimals=2)))
     print ("Optimal objective function value: {}".format(np.around(f(x), decimals=2)))
