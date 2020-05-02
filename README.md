@@ -11,5 +11,6 @@ although in most cases, effort has been made to use numpy tricks
 for faster computations.
 
 Currently, the following methods have been implemented:
-1. Simplex method (primal and dual) for LP
-2. Long-step interior point method for QP
+1. [Simplex method (primal and dual) for LP](./simplex/)
+2. [Long-step interior point method for QP](./interior_point/)
+3. [Penalty method with steepest point for auxiliary problem](./penalty/)
